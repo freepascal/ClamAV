@@ -1,0 +1,53 @@
+#!/bin/bash
+#owensro/102710
+#
+# Test commands:
+# user scan, 'clamscan -r -l scan.log <dir>'
+# send to daemon, 'clamdscan -l scan.log <dir>'
+
+
+# Retrieve necessary packages from the interwebz
+wget http://packages.sw.be/clamav/clamav-0.96.4-1.el5.rf.i386.rpm 
+wget http://packages.sw.be/clamav/clamav-db-0.96.4-1.el5.rf.i386.rpm  
+wget http://packages.sw.be/clamav/clamd-0.96.4-1.el5.rf.i386.rpm      
+
+
+# Install packages
+rpm -Uvh clamav-db-0.96.4-1.el5.rf.i386.rpm
+rpm -Uvh clamav-0.96.4-1.el5.rf.i386.rpm
+rpm -Uvh clamd-0.96.4-1.el5.rf.i386.rpm
+
+
+# Test (To watch real time removed everything after "2>...."
+clamscan -r -l scan.txt /home/ 2>&1 > /dev/null
+
+# Clear the screen, and view the log
+clear;cat scan.txt
+
+
+#Start clamd 
+#service clamd start
+
+
+
+# Copy the freshclam init script (updates virii db automagically)
+cp freshclam /etc/init.d/freshclam
+chown root:root /etc/init.d/freshclam
+chmod 755 /etc/init.d/freshclam
+
+# add it to init and start
+chkconfig --add freshclam
+chkconfig --level 3 freshclam on
+# disable clamd, unecessary
+chkconfig --level 2345 clamd off
+
+#service freshclam start
+
+#
+# Copy daily virus check cronjob
+cp ./clamscan_daily /etc/cron.daily/
+
+
+# check the logs in /var/log/clamav
+#
+
